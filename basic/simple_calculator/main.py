@@ -9,6 +9,7 @@ class Calculator:
             2:self.subtraction(val1,val2),
             3:self.multiple(val1,val2),
             4:self.division(val1,val2),
+            5: self.exponentiation(val1, val2),
         }
         return operation.get(ops, "Invalid Operation")
     
@@ -16,7 +17,7 @@ class Calculator:
         while True:
             try:
                 ops = int(input("Operation -> "))
-                if 1<= ops <=4:
+                if 1<= ops <=5:
                     return ops
                 else:
                     print("Invalid Input. Try Again")
@@ -38,6 +39,9 @@ class Calculator:
         except ZeroDivisionError:
             return "Error: Division by zero is not allowed."
     
+    def exponentiation(self, val1, val2):
+        return val1 ** val2
+    
     def user_choice(self):
         print("======================================")
         print("Welcome to the Calculator App!")
@@ -52,7 +56,7 @@ class Calculator:
                 print("======================================")
                 print("Select the Operation:")
                 print("--------------------------------------")
-                print("1: Addition\n2: Subtraction\n3: Multiplication\n4: Division")
+                print("1: Addition\n2: Subtraction\n3: Multiplication\n4: Division\n5: Exponentiation")
                 print("======================================")
                 
                 # Get user-selected operation
