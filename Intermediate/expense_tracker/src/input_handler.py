@@ -27,13 +27,7 @@ class ExpenseManager:
             print("===============================")
         else:
             print("Incomplete expense details. Please try again.")
-
-    def category_validation(self, count, key):
-        """
-        Validate and display a category during traversal.
-        """
-        print(f"[{count + 1}] {key}")
-
+    
     def description_validation(self):
         """
         Validate the expense description.
