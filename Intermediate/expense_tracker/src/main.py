@@ -1,3 +1,5 @@
+from input_handler import ExpenseManager
+from reports import ReportGenerator
 class Application:
     def __init__(self):
         self.expense_manager = ExpenseManager()
