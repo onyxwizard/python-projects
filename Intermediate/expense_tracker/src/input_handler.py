@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from category_list import CategoryList
-
+from storage import StorageManager
 
 class ExpenseManager:
     def __init__(self):
@@ -13,6 +13,7 @@ class ExpenseManager:
         self.category = None
         self.date = None
         self.categories = CategoryList(export_key=self)  # Initialize CategoryList with export_key
+        self.storage_manager = StorageManager()
 
     def expense_output(self):
         """
@@ -31,25 +32,23 @@ class ExpenseManager:
     def description_validation(self):
         """
         Validate the expense description.
-        Description must be alphabetic, 3–15 characters long, and can include underscores or hyphens.
+        Description must be alphabetic, 3–50 characters long, and can include underscores or hyphens.
         """
         pattern = r'^[A-Za-z][A-Za-z_-]*[A-Za-z]$'
-        max_attempts = 3  # Maximum number of retries
+        max_attempts = 3
         attempts = 0
 
         while attempts < max_attempts:
-            description = input("Enter expense description (alphabetic, 3–15 characters): ").strip()
-            if re.match(pattern, description) and 3 <= len(description) <= 15:
+            description = input("Enter expense description (alphabetic, 3–50 characters): ").strip()
+            if re.match(pattern, description) and 3 <= len(description) <= 50:
                 return description
             else:
                 print("Invalid description format:")
                 print("[1] Must be alphabetic (minimum 3 characters).")
                 print("[2] Can include underscores or hyphens.")
-                print("[3] Maximum length is 15 characters.")
-
+                print("[3] Maximum length is 50 characters.")
             attempts += 1
 
-        # Raise an exception if the user exceeds the maximum number of attempts
         raise ValueError("Too many invalid attempts for description validation.")
 
     def amount_validation(self):
@@ -75,24 +74,28 @@ class ExpenseManager:
     def date_validation(self):
         """
         Validate the expense date.
-        Date must be in the format YYYY-MM-DD and cannot be a future date.
+        Date must be in the format YYYY-MM-DD, cannot be a future date, and must be after 2000-01-01.
         """
-        max_attempts = 3  # Maximum number of retries
+        max_attempts = 3
         attempts = 0
-        
         date_format = "%Y-%m-%d"
-        current_date = datetime.now().date()  # Get today's date
+        current_date = datetime.now().date()
+        min_date = datetime(2000, 1, 1).date()  # Earliest valid date
+
         while attempts < max_attempts:
             date_input = input("Enter the date of the expense (YYYY-MM-DD): ").strip()
             try:
-                parsed_date = datetime.strptime(date_input, date_format).date()  # Parse the input date
-                if parsed_date > current_date:
+                parsed_date = datetime.strptime(date_input, date_format).date()
+                if parsed_date > current_date and parsed_date >= min_date:
                     print("Error: Cannot add expenses for future dates. Please enter a valid past or present date.")
+                elif parsed_date < min_date:
+                    print("Error: Date must be after 2000-01-01.")
                 else:
-                    return parsed_date.strftime(date_format)  # Return formatted date as a string
+                    return parsed_date.strftime(date_format)
             except ValueError:
                 print("Invalid date format. Please use YYYY-MM-DD.")
             attempts += 1
+
         raise ValueError("Too many invalid attempts for date validation.")
     
     def select_top_level_category(self):
@@ -103,7 +106,9 @@ class ExpenseManager:
         print("\nSelect a Top-Level Category:")
         top_level_categories = self.categories.display_top_level_categories()
 
-        while True:
+        max_attempts = 3
+        attempts = 0
+        while attempts < max_attempts:
             try:
                 choice = int(input("Enter the number of the top-level category: "))
                 selected_category = self.categories.get_category_by_index(top_level_categories, choice)
@@ -114,7 +119,9 @@ class ExpenseManager:
                     print("Invalid choice. Please select a valid top-level category number.")
             except ValueError:
                 print("Invalid input. Please enter a number.")
-
+            attempts += 1
+        raise ValueError("Too many invalid attempts for top-level category selection.")
+    
     def select_subcategory(self, top_level_category):
         """
         Allow the user to select a subcategory under a top-level category.
@@ -166,6 +173,12 @@ class ExpenseManager:
         print("\n=== Add a New Expense ===")
         self.display()
         self.expense_output()
+        self.storage_manager.save_expense(
+            self.description,
+            self.amount,
+            self.category,
+            self.date
+        )
 
 
 if __name__ == "__main__":
